@@ -1,0 +1,24 @@
+__object__:
+  path: generate
+  name: AdversarialFlowGenerator
+
+gen:
+  model:
+    __inherit__: configs/models/xl2.yaml  # Change size to match checkpoint.
+    use_t_src: False
+    use_t_tgt: False
+  checkpoint: xl2_1nfe_guided_FID2.38.pth
+  pred_type: x
+
+vae:
+  model:
+    __inherit__: configs/models/vae.yaml
+  checkpoint: sd-vae-ft-mse.pth
+  scaling_factor: 0.18215
+  compile: True
+  dtype: float32
+
+generation:
+  seed: 0
+  steps: 1
+  output: output/xl2_1nfe

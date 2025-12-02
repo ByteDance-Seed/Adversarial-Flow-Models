@@ -1,0 +1,26 @@
+__object__:
+  path: generate
+  name: AdversarialFlowGenerator
+
+gen:
+  model:
+    __inherit__: configs/models/xl2.yaml
+    __object__:
+      path: models.generator_deep # Switch to use deep architecture
+      name: GeneratorDeep
+    repeat: 4
+  checkpoint: xl2_112layer_1nfe_guided_FID1.94.pth
+  pred_type: x
+
+vae:
+  model:
+    __inherit__: configs/models/vae.yaml
+  checkpoint: sd-vae-ft-mse.pth
+  scaling_factor: 0.18215
+  compile: True
+  dtype: float32
+
+generation:
+  seed: 0
+  steps: 1
+  output: output/xl2_1nfe_112layer

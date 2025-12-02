@@ -1,0 +1,11 @@
+__object__:
+  path: models.generator
+  name: Generator
+  args: as_params
+
+depth: 12
+hidden_size: 768
+patch_size: 2
+num_heads: 12
+learn_sigma: False
+class_dropout_prob: 0.0
