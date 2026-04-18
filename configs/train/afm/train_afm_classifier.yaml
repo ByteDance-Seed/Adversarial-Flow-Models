@@ -1,0 +1,67 @@
+__object__:
+  path: train_adversarial_flow_classifier
+  name: ClassifierTrainer
+
+exp:
+  model: b2
+  gpu: 8
+  bsz: 256
+  lr: 1e-4
+  postfix: ""
+
+data:
+  train:
+    dataset:
+      path: configs.data.imagenet
+      resolution: 256
+      flip_prob: 0.5
+    dataloader:
+      batch_size: ${eval:'${exp.bsz} // ${exp.gpu}'}
+      num_workers: 32
+      prefetch_factor: 96
+
+cls:
+  model:
+    __inherit__: configs/models/afm/dit/${exp.model}.yaml
+    __object__:
+      path: models.afm.dit.classifier
+      name: Classifier
+
+ema:
+  decay: 0.9995
+
+vae:
+  model:
+    __inherit__: configs/models/afm/dit/vae.yaml
+  checkpoint: sd-vae-ft-mse.pth
+  scaling_factor: 0.18215
+  compile: True
+  dtype: bfloat16
+
+training:
+  project: adversarial-flow-models
+  name: ${exp.model}-b${exp.bsz}-lr${exp.lr}${exp.postfix}
+  seed: Null
+  init_step: 0
+  steps: 5000000  # This is an arbitrary large number.
+  gradient_clip: 50.0
+
+optimizer:
+  type: AdamW
+  lr: ${exp.lr}
+  eps: 1e-8
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 100
+
+persistence:
+  interval: 20000
+  override: True
+  path: output/${training.project}/${training.name}

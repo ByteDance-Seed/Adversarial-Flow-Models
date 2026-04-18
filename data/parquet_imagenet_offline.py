@@ -1,8 +1,7 @@
 from typing import Any, Callable, Literal, Optional
-import io
+import random
 import numpy as np
 import torch
-from PIL import Image
 from torch import nn
 
 from common.logger import get_logger
@@ -39,22 +38,17 @@ class ImagenetParquetDataset(ParquetDataset):
         for sample in super().__iter__():
             try:
                 # Image decode.
-                image_bytes = sample["data"]
-                with Image.open(io.BytesIO(image_bytes)) as image:
-                    image = image.convert("RGB")
-
-                # Image transform.
-                if self.image_transform is not None:
-                    image = self.image_transform(image)
+                key = random.choice(["latent", "latent_xflip"])
+                latent = sample[key]
+                latent = np.frombuffer(latent, dtype=np.float32).reshape(4, 32, 32)
+                latent = torch.from_numpy(latent)
 
                 # Class condition.
                 label = sample["label"]
-                if isinstance(label, np.ndarray):
-                    label = label[0]
-                label = torch.tensor(int(label))
+                label = torch.tensor(label)
 
                 yield {
-                    "image": image,
+                    "latent": latent,
                     "label": label,
                 }
 

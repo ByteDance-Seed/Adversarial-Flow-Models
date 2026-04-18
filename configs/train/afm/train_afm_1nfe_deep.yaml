@@ -1,0 +1,129 @@
+__object__:
+  path: train_adversarial_flow_imagenet
+  name: AdversarialFlowTrainer
+
+exp:
+  gen: xl2
+  dis: xl2
+  gpu: 8
+  bsz: 256
+  ot: 0.2
+  ot_end: 0.005
+  gp: 0.25
+  gpr: 0.25
+  pred: x
+  depth: 2      # 2=56layers or 4=112layers
+  gen_lr: 5e-5  # lr / depth
+  dis_lr: 1e-4
+  postfix: ""
+  decay_steps: 1000000
+
+data:
+  train:
+    dataset:
+      path: configs.data.imagenet
+      resolution: 256
+      flip_prob: 0.5
+    dataloader:
+      batch_size: ${eval:'${exp.bsz} // ${exp.gpu}'}
+      num_workers: 32
+      prefetch_factor: 96
+
+gen:
+  model:
+    __inherit__: configs/models/afm/dit/${exp.gen}.yaml
+    __object__:
+      path: models.afm.dit.generator_deep # Switch to use deep architecture
+      name: GeneratorDeep
+    repeat: ${exp.depth}
+  pred_type: ${exp.pred}
+  checkpoint: Null
+
+dis:
+  model:
+    __inherit__: configs/models/afm/dit/${exp.dis}.yaml
+    __object__:
+      path: models.afm.dit.discriminator
+      name: Discriminator
+      args: as_params
+  checkpoint: Null
+
+ema:
+  decay: 0.9999
+  autoreload: False
+
+vae:
+  model:
+    __inherit__: configs/models/afm/dit/vae.yaml
+  checkpoint: sd-vae-ft-mse.pth
+  scaling_factor: 0.18215
+  compile: True
+  dtype: bfloat16
+
+adversarial:
+  ttur: 1
+  gp_scale: ${exp.gp}
+  gp_bsz_ratio: ${exp.gpr}
+  gp_eps: 0.01
+  ot_scale: ${exp.ot}
+  cp_scale: 0.01
+  augment_p: 0.0
+  grad_norm: True
+
+ot_scale_schedule:
+- type: cosine
+  start: ${exp.ot}
+  end: ${exp.ot_end}
+  steps: ${exp.decay_steps}
+
+training:
+  project: adversarial-flow-models
+  name: ${exp.gen}${exp.dis}-${exp.pred}-b${exp.bsz}-ot${exp.ot}to${exp.ot_end}-agp${exp.gp}-${exp.gpr}-lr${exp.gen_lr}-${exp.dis_lr}-cos${eval:'str(${exp.decay_steps}/1000000)+"m"'}-depth${exp.depth}${exp.postfix}
+  accumulation: 1
+  seed: Null
+  init_step: 0
+  steps: 5000000  # This is an arbitrary large number.
+  gradient_clip: 5.0
+  dis_gradient_clip: 5.0
+
+optimizer:
+  type: AdamW
+  gen_lr: ${exp.gen_lr}
+  dis_lr: ${exp.dis_lr}
+  eps: 1e-8
+  weight_decay: 0.01
+  betas: [0.0, 0.9]
+
+validation:
+  enabled: True
+  interval: 1000
+  max_batch_size: 16
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 100
+    visuals: 1000
+  max_batch_size: 8
+
+evaluation:
+  interval: 10000
+  metrics:
+    fid:
+      __object__:
+        path: common.metrics
+        name: FID
+        args: as_params
+      extractor_path: weights-inception-2015-12-05-6726825d.pth
+      resolution: 299
+      interpolation: bilinear
+      target_info_path: openai_imagenet_train_info.pt
+      normalize: True
+
+persistence:
+  interval: 20000
+  override: True
+  path: output/${training.project}/${training.name}

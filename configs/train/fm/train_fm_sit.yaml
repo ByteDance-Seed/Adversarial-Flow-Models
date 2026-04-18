@@ -1,0 +1,88 @@
+__object__:
+  path: train_flow_matching_imagenet
+  name: FlowMatchingTrainer
+
+exp:
+  model: xl2
+  gpu: 8
+  bsz: 256
+  lr: 1e-4
+  postfix: ""
+
+data:
+  train:
+    dataset:
+      path: configs.data.imagenet_offline
+      resolution: 256
+      flip_prob: 0.5
+    dataloader:
+      batch_size: ${eval:'${exp.bsz} // ${exp.gpu}'}
+      num_workers: 8
+      prefetch_factor: 32
+
+dit:
+  model:
+    __inherit__: configs/models/cafm/sit/${exp.model}.yaml
+  checkpoint: ./SiT-XL-2-256.pt
+  dropout: 0.1
+
+ema:
+  decay: 0.9999
+
+vae:
+  model:
+    __inherit__: configs/models/cafm/sit/vae.yaml
+  checkpoint: ./sd-vae-ft-mse.pth
+  scaling_factor: 0.18215
+  compile: True
+  dtype: bfloat16
+
+training:
+  project: continuous-adversarial-flow-models
+  name: sit-fm-${exp.model}-b${exp.bsz}-lr${exp.lr}${exp.postfix}
+  seed: Null
+  init_step: 0
+  steps: 1_000_000       # For bsz256, 5k iter is 1 epoch. 50k is 10 epochs.
+  timesteps: uniform
+  gradient_clip: Null
+
+optimizer:
+  lr: ${exp.lr}
+  weight_decay: 0.0
+  betas: [0.9, 0.999]
+
+validation:
+  enabled: True
+  interval: 10000
+  max_batch_size: 16
+  steps: 256
+  sampler: heun
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 100
+    visuals: 100
+  max_batch_size: 8
+
+evaluation:
+  interval: 50000
+  metrics:
+    fid:
+      __object__:
+        path: common.metrics
+        name: FID
+        args: as_params
+      extractor_path: ./weights-inception-2015-12-05-6726825d.pth
+      resolution: 299
+      interpolation: bilinear
+      target_info_path: ./openai_imagenet_train_info.pt
+      normalize: True
+
+persistence:
+  interval: 25000
+  override: True
+  path: ./${training.project}/${training.name}

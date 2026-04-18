@@ -37,7 +37,7 @@ class WandbWriter(Writer):
     @new_thread
     def log_images(
         self,
-        images: Dict[str, torch.Tensor],
+        images: Dict[str, Union[torch.Tensor, List[torch.Tensor]]],
         step: int,
         value_range: Tuple[float, float] = (0.0, 1.0),
         captions: Optional[Dict[str, List[str]]] = None,
@@ -45,7 +45,13 @@ class WandbWriter(Writer):
 
         metrics = {}
         for k, v in images.items():
-            v = normalize(v.detach(), value_range).unbind(dim=0)  # C H W
+            if isinstance(v, list):
+                v = [
+                    normalize(vv.detach(), value_range)
+                    for vv in v
+                ]
+            else:
+                v = normalize(v.detach(), value_range).unbind(dim=0)  # C H W
             v_cap = captions[k] if captions is not None and k in captions else [None] * len(v)
             if len(v_cap) != len(v):
                 raise ValueError(f"Expected {len(v)} items but only found {len(v_cap)} for {k}")

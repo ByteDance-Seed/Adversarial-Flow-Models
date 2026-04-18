@@ -1,0 +1,8 @@
+torch==2.5.0                    # Torch
+torchvision==0.20.0             # Torchvision
+omegaconf==2.3.0                # Configuration system
+diffusers==0.37.0               # Diffusers
+torchmetrics==1.3.2             # Metric
+torch-fidelity==0.3.0           # FID-related
+transformers==5.3.0             # Transformers
+wandb==0.23.0                   # Logging

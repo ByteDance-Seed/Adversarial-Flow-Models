@@ -1,0 +1,76 @@
+# Download https://huggingface.co/Tongyi-MAI/Z-Image to local ./Z-Image
+
+__object__:
+  path: train_continuous_adversarial_flow_zimage
+  name: ContinuousAdversarialFlowTrainer
+
+data:
+  train:
+    dataset:
+      path: configs.data.t2i
+      resolution: 512
+    dataloader:
+      batch_size: 8     # Adjust by total bsz / gpu. We used total bsz 1024.
+      num_workers: 8
+      prefetch_factor: 8
+
+dit:
+  path: Z-Image/transformer
+  checkpoint: Null  # Optional: use fm finetuning ckpt.
+
+ema:
+  decay: 0.99
+
+vae:
+  path: Z-Image/vae
+
+dis:
+  checkpoint: null  # Optional: use fm finetuning ckpt.
+
+text_encoder:
+  path: Z-Image/text_encoder
+  dropout: 0.1
+
+tokenizer:
+  path: Z-Image/tokenizer
+
+training:
+  project: continuous-adversarial-flow-models
+  name: zimage-cafm
+  seed: Null
+  init_step: 0
+  steps: 10000000
+  gradient_clip: Null
+  timesteps: uniform
+
+adversarial:
+  N: 16
+  cp_scale: 0.001
+  ot_scale: 0.0
+  warmup: 100
+
+optimizer:
+  gen_lr: 5e-5
+  dis_lr: 3e-5
+  weight_decay: 0.01
+  betas: [0.0, 0.95]
+
+validation:
+  enabled: True
+  interval: 100
+  max_batch_size: 16
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 50
+    visuals: 100
+  max_batch_size: 8
+
+persistence:
+  interval: 1000
+  override: True
+  path: ./${training.project}/${training.name}

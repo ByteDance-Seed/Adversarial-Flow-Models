@@ -1,0 +1,12 @@
+__object__:
+  path: models.cafm.sit.generator
+  name: Generator
+  args: as_params
+
+depth: 28
+hidden_size: 1152
+patch_size: 2
+num_heads: 16
+learn_sigma: True         # for compatibility with the pretrained weight.
+class_dropout_prob: 0.0   # dropout handled in the trainner.
+num_classes: 1001         # 1000 class + dropout class.

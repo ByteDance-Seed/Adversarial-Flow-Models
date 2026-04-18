@@ -224,7 +224,7 @@ def copy(src: str, tgt: str, blocking: bool = True):
 
     if not src_hdfs and not tgt_hdfs:
         shutil.copy(src, tgt)
-        return
+        return None
 
     if src_hdfs and tgt_hdfs:
         process = subprocess.Popen(["hdfs", "dfs", "-cp", "-f", src, tgt])
@@ -235,6 +235,8 @@ def copy(src: str, tgt: str, blocking: bool = True):
 
     if blocking:
         process.wait()
+
+    return process
 
 
 def move(src: str, tgt: str):

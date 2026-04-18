@@ -1,0 +1,82 @@
+__object__:
+  path: train_flow_matching_imagenet
+  name: FlowMatchingTrainer
+
+exp:
+  model: h16
+  gpu: 8
+  bsz: 256 #1024
+  lr: 2e-4
+  postfix: ""
+
+data:
+  train:
+    dataset:
+      path: configs.data.imagenet
+      resolution: 256
+      flip_prob: 0.5
+    dataloader:
+      batch_size: ${eval:'${exp.bsz} // ${exp.gpu}'}
+      num_workers: 8
+      prefetch_factor: 32
+
+dit:
+  model:
+    __inherit__: configs/models/cafm/jit/${exp.model}.yaml
+  checkpoint: ./JiT-H-16-256-ema0.9999.pth
+  dropout: 0.1
+
+ema:
+  decay: 0.9999
+
+vae: Null # JiT doesn't need VAE
+
+training:
+  project: continuous-adversarial-flow-models
+  name: jit-fm-${exp.model}-b${exp.bsz}-lr${exp.lr}${exp.postfix}
+  seed: Null
+  init_step: 0
+  steps: 1_000_000       # For bsz1024, 1.25k iter is 1 epoch. 12.5k is 10 epochs.
+  timesteps: logisticnormal_jit
+  gradient_clip: Null
+
+optimizer:
+  lr: ${exp.lr}
+  weight_decay: 0.0
+  betas: [0.9, 0.95]
+
+validation:
+  enabled: True
+  interval: 10000
+  max_batch_size: 16
+  steps: 50
+  sampler: heun
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 100
+    visuals: 100
+  max_batch_size: 8
+
+evaluation:
+  interval: 12500
+  metrics:
+    fid:
+      __object__:
+        path: common.metrics
+        name: FID
+        args: as_params
+      extractor_path: ./weights-inception-2015-12-05-6726825d.pth
+      resolution: 299
+      interpolation: bilinear
+      target_info_path: ./openai_imagenet_train_info.pt
+      normalize: True
+
+persistence:
+  interval: 12500
+  override: True
+  path: ./${training.project}/${training.name}

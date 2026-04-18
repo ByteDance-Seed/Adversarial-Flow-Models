@@ -1,0 +1,11 @@
+__object__:
+  path: models.afm.dit.generator
+  name: Generator
+  args: as_params
+
+depth: 16
+hidden_size: 1024
+patch_size: 2
+num_heads: 16
+learn_sigma: False
+class_dropout_prob: 0.0

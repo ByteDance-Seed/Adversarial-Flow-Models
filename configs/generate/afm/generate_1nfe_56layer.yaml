@@ -1,0 +1,26 @@
+__object__:
+  path: generate
+  name: AdversarialFlowGenerator
+
+gen:
+  model:
+    __inherit__: configs/models/afm/dit/xl2.yaml
+    __object__:
+      path: models.afm.dit.generator_deep # Switch to use deep architecture
+      name: GeneratorDeep
+    repeat: 2  # 2 for 56 layers, 4 for 112 layers.
+  checkpoint: xl2_56layer_1nfe_guided_FID2.08.pth
+  pred_type: x
+
+vae:
+  model:
+    __inherit__: configs/models/afm/dit/vae.yaml
+  checkpoint: sd-vae-ft-mse.pth
+  scaling_factor: 0.18215
+  compile: True
+  dtype: float32
+
+generation:
+  seed: 0
+  steps: 1
+  output: output/xl2_1nfe_56layer

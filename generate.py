@@ -1,3 +1,9 @@
+"""
+This generate.py is only for AFMs.
+CAFMs should use the official sampling code from SiT/JiT.
+"""
+
+
 import datetime
 import os
 import torch

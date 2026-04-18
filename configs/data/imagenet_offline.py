@@ -1,6 +1,6 @@
 from typing import Callable, Optional
 
-from data.parquet_imagenet import ImagenetParquetDataset
+from data.parquet_imagenet_offline import ImagenetParquetDataset
 
 
 def create_dataset(
@@ -8,9 +8,9 @@ def create_dataset(
     **kwargs,
 ):
     # Feel free to replace the following to your dataloading class.
-    
+
     return ImagenetParquetDataset(
-        path="./imagenet",
+        path="./imagenet-offline",
         image_transform=image_transform,
         **kwargs,
     )

@@ -1,3 +1,9 @@
+"""
+This is the gradient normalization techqniue
+proposed in AFMs (https://arxiv.org/abs/2511.22475).
+"""
+
+
 import torch
 import torch.nn as nn
 import torch.distributed as dist

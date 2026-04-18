@@ -1,0 +1,12 @@
+__object__:
+  path: models.cafm.jit.generator
+  name: Generator
+  args: as_params
+
+depth: 32
+hidden_size: 1280
+num_heads: 16
+bottleneck_dim: 256
+in_context_len: 32
+in_context_start: 10
+patch_size: 16

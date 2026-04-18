@@ -1,0 +1,66 @@
+# Download https://huggingface.co/Tongyi-MAI/Z-Image to local ./Z-Image
+
+__object__:
+  path: train_flow_matching_zimage
+  name: FlowMatchingTrainer
+
+data:
+  train:
+    dataset:
+      path: configs.data.t2i
+      resolution: 512
+    dataloader:
+      batch_size: 8    # Adjust by total bsz / gpu. We used total bsz 1024.
+      num_workers: 8
+      prefetch_factor: 8
+
+dit:
+  path: Z-Image/transformer
+  checkpoint: Null
+
+ema:
+  decay: 0.999
+
+vae:
+  path: Z-Image/vae
+
+text_encoder:
+  path: Z-Image/text_encoder
+  dropout: 0.1
+
+tokenizer:
+  path: Z-Image/tokenizer
+
+training:
+  project: continuous-adversarial-flow-models
+  name: zimage-fm
+  seed: Null
+  init_step: 0
+  steps: 10000000
+  gradient_clip: Null
+  timesteps: uniform
+
+optimizer:
+  lr: 5e-5
+  weight_decay: 0.01
+  betas: [0.9, 0.95]
+
+validation:
+  enabled: True
+  interval: 100
+  max_batch_size: 16
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 50
+    visuals: 50
+  max_batch_size: 8
+
+persistence:
+  interval: 1000
+  override: True
+  path: ./${training.project}/${training.name}

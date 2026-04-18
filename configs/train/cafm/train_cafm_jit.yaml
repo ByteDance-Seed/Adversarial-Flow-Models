@@ -1,0 +1,104 @@
+__object__:
+  path: train_continuous_adversarial_flow_imagenet
+  name: ContinuousAdversarialFlowTrainer
+
+exp:
+  gen: h16
+  dis: h16
+  gpu: 8
+  bsz: 1024
+  gen_lr: 1e-5
+  dis_lr: 1e-5
+  N: 16
+  ot: 0.0
+  warmup: 5000 # for bsz1024, 1.25k is 1 epoch, 5k is 4 epochs.
+  postfix: ""
+
+data:
+  train:
+    dataset:
+      path: configs.data.imagenet
+      resolution: 256
+      flip_prob: 0.5
+    dataloader:
+      batch_size: ${eval:'${exp.bsz} // ${exp.gpu}'}
+      num_workers: 8
+      prefetch_factor: 32
+
+gen:
+  model:
+    __inherit__: configs/models/cafm/jit/${exp.gen}.yaml
+  checkpoint: ./JiT-H-16-256-ema0.9999.pth
+  dropout: 0.1
+
+dis:
+  model:
+    __inherit__: configs/models/cafm/jit/${exp.dis}.yaml
+    __object__:
+      path: models.cafm.jit.discriminator
+      name: Discriminator
+  checkpoint: ./JiT-H-16-256-ema0.9999.pth
+  strict: False
+
+ema:
+  decay: 0.99
+
+vae: Null # JiT doesn't need VAE
+
+adversarial:
+  N: ${exp.N}
+  cp_scale: 0.001
+  ot_scale: ${exp.ot}
+  warmup: ${exp.warmup}
+
+training:
+  project: continuous-adversarial-flow-models
+  name: jit-cafm-${exp.gen}${exp.dis}-b${exp.bsz}-lr${exp.gen_lr}-ot${exp.dis_lr}-ot${exp.ot}-N${exp.N}-warm${exp.warmup}${exp.postfix}
+  seed: Null
+  init_step: 0
+  steps: 1_000_000       # For bsz1024, 1.25k iter is 1 epoch. 12.5k is 10 epochs.
+  timesteps: logisticnormal_jit
+  gradient_clip: 10000.0
+  dis_gradient_clip: 10000.0
+
+optimizer:
+  gen_lr: ${exp.gen_lr}
+  dis_lr: ${exp.dis_lr}
+  weight_decay: 0.0
+  betas: [0.0, 0.95]
+
+validation:
+  enabled: True
+  interval: 1000
+  max_batch_size: 16
+  steps: 50
+  sampler: heun
+
+writer:
+  wandb:
+    project: ${training.project}
+    name: ${training.name}
+    resume: "allow"
+  interval:
+    metrics: 100
+    visuals: 500
+  max_batch_size: 8
+
+evaluation:
+  interval: 12500
+  metrics:
+    fid:
+      __object__:
+        path: common.metrics
+        name: FID
+        args: as_params
+      extractor_path: ./weights-inception-2015-12-05-6726825d.pth
+      resolution: 299
+      interpolation: bilinear
+      target_info_path: ./openai_imagenet_train_info.pt
+      normalize: True
+
+persistence:
+  interval: 12500
+  override: True
+  path: ./${training.project}/${training.name}
