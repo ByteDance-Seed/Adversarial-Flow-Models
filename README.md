@@ -2,11 +2,11 @@
 
 This repository contains the official PyTorch implementation of both discrete and continuous Adversarial Flow Models.
 
-> [**Adversarial Flow Models**](https://www.arxiv.org/abs/2511.22475)<br>
+> [**Adversarial Flow Models**](https://www.arxiv.org/abs/2511.22475) (ICML2026)<br>
 > [Shanchuan Lin](https://scholar.google.com/citations?user=EDWUw7gAAAAJ), [Ceyuan Yang](https://scholar.google.com/citations?user=Rfj4jWoAAAAJ), [Zhijie Lin](https://scholar.google.com/citations?user=xXMj6_EAAAAJ),  [Hao Chen](https://scholar.google.com/citations?user=QMuIRLYAAAAJ), [Haoqi Fan](https://scholar.google.com/citations?user=76B8lrgAAAAJ)
 > <br>ByteDance Seed<br>
 
-> [**Continuous Adversarial Flow Models**](https://arxiv.org/abs/2604.11521)<br>
+> [**Continuous Adversarial Flow Models**](https://arxiv.org/abs/2604.11521) (ECCV2026)<br>
 > [Shanchuan Lin](https://scholar.google.com/citations?user=EDWUw7gAAAAJ), [Ceyuan Yang](https://scholar.google.com/citations?user=Rfj4jWoAAAAJ), [Zhijie Lin](https://scholar.google.com/citations?user=xXMj6_EAAAAJ),  [Hao Chen](https://scholar.google.com/citations?user=QMuIRLYAAAAJ), [Haoqi Fan](https://scholar.google.com/citations?user=76B8lrgAAAAJ)
 > <br>ByteDance Seed<br>
 
@@ -90,16 +90,17 @@ Note that the IterableDataset must internally check the current rank and worker 
 ## Citation
 
 ```bibtex
-@article{afm,
-  title={Adversarial Flow Models},
-  author={Lin, Shanchuan and Yang, Ceyuan and Lin, Zhijie and Chen, Hao and Fan, Haoqi},
-  journal={arXiv preprint arXiv:2511.22475},
-  year={2025}
+@inproceedings{afm,
+   title={Adversarial Flow Models},
+   author={Shanchuan Lin and Ceyuan Yang and Zhijie Lin and Hao Chen and Haoqi Fan},
+   booktitle={Forty-third International Conference on Machine Learning},
+   year={2026},
+   url={https://openreview.net/forum?id=3GPPUHlJU9}
 }
 
 @article{cafm,
   title={Continuous Adversarial Flow Models},
-  author={Lin, Shanchuan and Yang, Ceyuan and Lin, Zhijie and Chen, Hao and Fan, Haoqi},
+  author={Shanchuan Lin and Ceyuan Yang and Zhijie Lin and Hao Chen and Haoqi Fan},
   journal={arXiv preprint arXiv:2604.11521},
   year={2026}
 }
