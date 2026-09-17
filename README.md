@@ -98,11 +98,13 @@ Note that the IterableDataset must internally check the current rank and worker 
    url={https://openreview.net/forum?id=3GPPUHlJU9}
 }
 
-@article{cafm,
-  title={Continuous Adversarial Flow Models},
+@inproceedings{cafm,
+  title={Continuous adversarial flow models},
   author={Shanchuan Lin and Ceyuan Yang and Zhijie Lin and Hao Chen and Haoqi Fan},
-  journal={arXiv preprint arXiv:2604.11521},
-  year={2026}
+  booktitle={European Conference on Computer Vision},
+  pages={645--663},
+  year={2026},
+  organization={Springer}
 }
 ```
 
